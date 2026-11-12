@@ -1,0 +1,10 @@
+{
+  "name": "lume-player",
+  "version": "1.0.0",
+  "description": "Player de listas M3U e Xtream para TV Samsung via TizenBrew",
+  "packageType": "app",
+  "appName": "Lume Player",
+  "appPath": "index.html",
+  "keys": ["ColorF2Yellow", "MediaPlayPause", "MediaPlay", "MediaPause", "MediaStop"],
+  "license": "MIT"
+}
