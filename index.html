@@ -184,7 +184,7 @@ video::cue{font-size:42px;background:rgba(0,0,0,.65);color:#fff}
 <div id="main">
 <div id="vHome"><div id="hero"><div id="ht"><h1 id="hn"></h1><p id="hg" class="mu"></p><button id="hb" class="f btn">▶ Assistir</button><button id="hc" class="f" hidden></button></div></div><div id="rows"></div></div>
 <div id="vList" hidden><div id="cats"></div><div id="mid"><input id="q" class="f" placeholder="Buscar neste catálogo"><div id="grid"></div></div><div id="pane"><div id="pt"></div><div id="pg" class="mu"></div><div id="ph" class="mu">Aperte OK no canal de novo para tela cheia</div></div><div id="inf"><div id="ib"></div></div></div>
-<div id="vSet" hidden><h1>Configurações</h1><p class="mu">Lume Player · versão 1.5.4</p><h3>Temas</h3><div id="ths"></div><h3>IMDb (OMDb)</h3><p class="mu" style="margin-bottom:14px">Cole sua chave gratuita do omdbapi.com para ver nota, elenco e sinopse do IMDb.</p><input id="om" class="f" placeholder="Chave OMDb"><h3>Lista</h3><button id="chl" class="f">Trocar lista (M3U / Xtream)</button><p id="dbg" class="mu" style="margin-top:30px;font-size:18px;word-break:break-all"></p></div>
+<div id="vSet" hidden><h1>Configurações</h1><p class="mu">Lume Player · versão 1.5.6</p><h3>Temas</h3><div id="ths"></div><h3>IMDb (OMDb)</h3><p class="mu" style="margin-bottom:14px">Cole sua chave gratuita do omdbapi.com para ver nota, elenco e sinopse do IMDb.</p><input id="om" class="f" placeholder="Chave OMDb"><h3>Lista</h3><button id="chl" class="f">Trocar lista (M3U / Xtream)</button><p id="dbg" class="mu" style="margin-top:30px;font-size:18px;word-break:break-all"></p></div>
 </div></div>
 <div id="eps" hidden></div>
 <div id="lv" hidden><div id="lvp"><div id="lvh"></div><div id="lvc"><div id="lvg"></div><div id="lvl" hidden></div></div>
@@ -207,7 +207,9 @@ var slim=function(i){return{t:i.t,n:i.n,logo:i.logo,url:i.url,id:i.id,ext:i.ext,
 var msg=function(t){var m=$('#msg');m.textContent=t;m.style.opacity=t?1:0},err=function(t){$('#err').textContent=t};
 var fix=function(h){h=h.trim().replace(/\/+$/,'');return/^https?:/.test(h)?h:'http://'+h};
 var esc=function(u){return(u||'').replace(/['"\\()\s]/g,'')};
-var xt=function(a){return fetch(cfg.host+'/player_api.php?username='+encodeURIComponent(cfg.u)+'&password='+encodeURIComponent(cfg.p)+'&action='+a).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json()})};
+var xq=function(h,a){return fetch(h+'/player_api.php?username='+encodeURIComponent(cfg.u)+'&password='+encodeURIComponent(cfg.p)+'&action='+a).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json()})};
+var xt=function(a){return xq(cfg.host,a).catch(function(e){var h2=/^https:/i.test(cfg.host)?cfg.host.replace(/^https:/i,'http:'):cfg.host.replace(/^http:/i,'https:');
+ return xq(h2,a).then(function(r){cfg.host=h2;return r},function(){throw e})})};
 var lvOn=false,lvShow=false,lvHasG=true,lvt,lvbt,lvL=[],lvC='Todos',EP={},PR={},EPL=[],SER={},nxi,nxOn=false,ctlt,akpv;
 try{PR=JSON.parse(localStorage.lumePR)||{}}catch(e){}
 function b64(s){try{return decodeURIComponent(escape(atob(s||'')))}catch(e){return s||''}}
@@ -374,6 +376,9 @@ function lvRows(a,b){var l=$('#lvl');lvL.slice(a,b).forEach(function(it,j){var k
  r.innerHTML='<b>'+(k+1)+'</b><i></i><span></span>';pic(r.querySelector('i'),it.logo,160);r.querySelector('span').textContent=it.n;
  r.onclick=function(){lvPlay(it)};r.onfocus=function(){if(l.children.length-k<10&&l.children.length<lvL.length)lvRows(l.children.length,l.children.length+60)};l.appendChild(r)})}
 function lvDraw(){$('#lvl').innerHTML='';lvRows(0,Math.max(60,lvIdx()+30))}
+function m3uToX(u){var m=u.match(/^(https?:\/\/[^?#]*?)\/get\.php\?(.+)$/i);if(!m)return null;var q={};
+ try{m[2].split('&').forEach(function(p){var k=p.split('=');q[k[0]]=decodeURIComponent(k.slice(1).join('=')||'')})}catch(e){return null}
+ return q.username&&q.password?{host:m[1],u:q.username,p:q.password}:null}
 function parseM3U(t){var o={live:[],movie:[],series:[]},m=null;
  t.split(/\r?\n/).forEach(function(l){
   if(l.indexOf('#EXTINF')==0){m={n:(l.split(/,(.*)$/)[1]||'').trim(),logo:(l.match(/tvg-logo="([^"]*)"/)||[])[1],g:(l.match(/group-title="([^"]*)"/)||[])[1]||'Outros'}}
@@ -390,7 +395,7 @@ async function ens(t){
    var r=await Promise.all(a.map(xt)),cm={};if(!Array.isArray(r[0])||!Array.isArray(r[1]))throw new Error('o servidor não devolveu a lista (confira servidor, usuário e senha)');
    r[0].forEach(function(k){cm[k.category_id]=k.category_name});
    D[t]=r[1].map(function(i){return{t:t,n:i.name,logo:i.stream_icon||i.cover,g:cm[i.category_id]||'Outros',id:i.stream_id||i.series_id,ext:i.container_extension||'mp4'}})}
-  msg('')
+  msg('');sv('lume',cfg)
  }catch(e){D._p=null;var em=String(e&&e.message||e);msg('Não carregou: '+em+(/fetch|network|load/i.test(em)?' (endereço inacessível ou bloqueado pela TV)':''));setTimeout(function(){msg('')},9000)}}
 function card(it,m,cw){var b=document.createElement('button');b._it=it;b.className='f card c'+m+(isFav(it)?' fv':'');
  b.innerHTML='<i></i><span></span>'+(cw&&it.d?'<b class="pb"><u style="width:'+Math.min(100,it.t0/it.d*100)+'%"></u></b>':'');
@@ -505,8 +510,8 @@ document.addEventListener('keydown',function(e){var k=e.keyCode,a=document.activ
  var d={37:[-1,0],38:[0,-1],39:[1,0],40:[0,1]}[k];
  if(d){e.preventDefault();nav(d)}});
 document.addEventListener('keyup',function(e){if(e.keyCode!=13||(isFs&&!lvOn))return;var a=document.activeElement;if(!(a.classList.contains('card')||a.classList.contains('lvi')||a.classList.contains('lvgi')))return;clearTimeout(lt);lt=null;if(!lp)a.click()});
-function enter(c){cfg=c;sv('lume',c);D={};PRM={};$('#setup').hidden=true;$('#app').hidden=false;go('home');setTimeout(focusNav,80)}
-$('#goM').onclick=function(){var u=$('#m3u').value.trim();u?enter({m3u:u}):err('Cole o link da lista M3U.')};
+function enter(c){cfg=c;D={};PRM={};$('#setup').hidden=true;$('#app').hidden=false;go('home');setTimeout(focusNav,80)}
+$('#goM').onclick=function(){var u=$('#m3u').value.trim();u?enter(m3uToX(u)||{m3u:u}):err('Cole o link da lista M3U.')};
 $('#goX').onclick=function(){var h=$('#xh').value,u=$('#xu').value.trim(),p=$('#xp').value.trim();h&&u&&p?enter({host:fix(h),u:u,p:p}):err('Preencha servidor, usuário e senha.')};
 document.querySelectorAll('.nav').forEach(function(b){b.onclick=function(){go(b.dataset.s)}});
 $('#q').oninput=function(){clearTimeout(qt);qt=setTimeout(draw,300)};
