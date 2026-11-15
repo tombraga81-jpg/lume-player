@@ -142,6 +142,14 @@ button,input{font:inherit;color:inherit;border:0;outline:0;background:var(--sf);
 .lvgi em{font-style:normal;color:var(--mu);font-size:20px;margin-left:12px}
 .lvgi.on{box-shadow:inset 6px 0 0 var(--ac)}
 .lvgi:focus,.lvi:focus{box-shadow:0 0 0 4px #fff}
+#kb{position:fixed;left:0;top:640px;width:1920px;height:440px;z-index:40;background:#0d0f14;border-top:1px solid var(--bd);padding:14px 120px}
+#kp{display:flex;align-items:center;height:60px;margin-bottom:10px}
+#kl{flex:none;width:300px;font-size:24px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#kv{flex:1;min-width:0;font-size:34px;white-space:nowrap;overflow:hidden}
+#kt{flex:none;margin-left:20px;padding:10px 24px}
+#kk{display:grid;grid-template-columns:repeat(10,1fr);grid-gap:8px}
+.k{height:62px;padding:0;text-align:center;font-size:26px}
+.k.w3{grid-column:span 3}.k.on{background:var(--ac);color:#fff}
 </style></head><body>
 <div id="setup"><h1>Lume Player</h1><p class="mu">Conecte sua lista para começar</p>
 <div class="rowb">
@@ -155,7 +163,7 @@ button,input{font:inherit;color:inherit;border:0;outline:0;background:var(--sf);
 <div id="main">
 <div id="vHome"><div id="hero"><div id="ht"><h1 id="hn"></h1><p id="hg" class="mu"></p><button id="hb" class="f btn">▶ Assistir</button></div></div><div id="rows"></div></div>
 <div id="vList" hidden><div id="cats"></div><div id="mid"><input id="q" class="f" placeholder="Buscar neste catálogo"><div id="grid"></div></div><div id="pane"><div id="pt"></div><div id="pg" class="mu"></div><div id="ph" class="mu">Aperte OK no canal de novo para tela cheia</div></div><div id="inf"><div id="ib"></div></div></div>
-<div id="vSet" hidden><h1>Configurações</h1><p class="mu">Lume Player · versão 1.5.1</p><h3>Temas</h3><div id="ths"></div><h3>IMDb (OMDb)</h3><p class="mu" style="margin-bottom:14px">Cole sua chave gratuita do omdbapi.com para ver nota, elenco e sinopse do IMDb.</p><input id="om" class="f" placeholder="Chave OMDb"><h3>Lista</h3><button id="chl" class="f">Trocar lista (M3U / Xtream)</button></div>
+<div id="vSet" hidden><h1>Configurações</h1><p class="mu">Lume Player · versão 1.5.3</p><h3>Temas</h3><div id="ths"></div><h3>IMDb (OMDb)</h3><p class="mu" style="margin-bottom:14px">Cole sua chave gratuita do omdbapi.com para ver nota, elenco e sinopse do IMDb.</p><input id="om" class="f" placeholder="Chave OMDb"><h3>Lista</h3><button id="chl" class="f">Trocar lista (M3U / Xtream)</button></div>
 </div></div>
 <div id="eps" hidden></div>
 <div id="lv" hidden><div id="lvp"><div id="lvh"></div><div id="lvc"><div id="lvg"></div><div id="lvl" hidden></div></div>
@@ -163,7 +171,8 @@ button,input{font:inherit;color:inherit;border:0;outline:0;background:var(--sf);
 <div id="pl" class="mini" hidden><video id="v"></video><div id="info"></div>
 <div id="ctl" hidden><div id="cpg"><u></u></div><div id="cr"><span id="ct">0:00 / 0:00</span><button id="c1" class="f cb">⏪ 10s</button><button id="c2" class="f cb">❚❚</button><button id="c3" class="f cb">10s ⏩</button><button id="cn" class="f cb" hidden>Próximo ▶</button></div></div>
 <div id="nx" hidden><div id="nxt"></div><button id="nxb" class="f btn">Pular agora</button></div></div>
-<div id="ak" hidden><div id="as"></div><div><button id="a1" class="f btn"></button><button id="a0" class="f btn" style="margin-left:20px">Começar do início</button></div></div><div id="msg"></div>
+<div id="ak" hidden><div id="as"></div><div><button id="a1" class="f btn"></button><button id="a0" class="f btn" style="margin-left:20px">Começar do início</button></div></div>
+<div id="kb" hidden><div id="kp"><span id="kl"></span><b id="kv"></b><button id="kt" class="f" hidden>Mostrar</button></div><div id="kk"></div></div><div id="msg"></div>
 <script>
 var $=function(s){return document.querySelector(s)},T={live:'TV ao vivo',movie:'Filmes',series:'Séries'};
 var cfg=null,D={},sec='home',tab='live',cat='Todos',list=[],shown=0,now=null,isFs=false,lf=null,lf0=null,ti,qt,lt=null,lp=false,ls=0,rs=0,FAV={live:[],movie:[],series:[]},CW=[];
@@ -176,7 +185,7 @@ var slim=function(i){return{t:i.t,n:i.n,logo:i.logo,url:i.url,id:i.id,ext:i.ext,
 var msg=function(t){var m=$('#msg');m.textContent=t;m.style.opacity=t?1:0},err=function(t){$('#err').textContent=t};
 var fix=function(h){h=h.trim().replace(/\/+$/,'');return/^https?:/.test(h)?h:'http://'+h};
 var esc=function(u){return(u||'').replace(/['"\\()\s]/g,'')};
-var xt=function(a){return fetch(cfg.host+'/player_api.php?username='+encodeURIComponent(cfg.u)+'&password='+encodeURIComponent(cfg.p)+'&action='+a).then(function(r){return r.json()})};
+var xt=function(a){return fetch(cfg.host+'/player_api.php?username='+encodeURIComponent(cfg.u)+'&password='+encodeURIComponent(cfg.p)+'&action='+a).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json()})};
 var lvOn=false,lvShow=false,lvHasG=true,lvt,lvbt,lvL=[],lvC='Todos',EP={},PR={},EPL=[],SER={},nxi,nxOn=false,ctlt,akpv;
 try{PR=JSON.parse(localStorage.lumePR)||{}}catch(e){}
 function b64(s){try{return decodeURIComponent(escape(atob(s||'')))}catch(e){return s||''}}
@@ -297,23 +306,43 @@ async function eps(it){msg('Abrindo série…');
   var all=e.querySelectorAll('.ec'),f=Array.prototype.filter.call(all,function(b){var p=PR[key(b._it)];return p&&p.t0>20&&p.t0<p.d*.95})[0]||all[0];
   if(f)f.focus();else msg('Sem episódios disponíveis.')
  }catch(x){msg('Não foi possível abrir esta série.')}}
+var kbEl=null,kbCaps=false,kbSym=false,kbShow=false;
+function kbVal(){if(!kbEl)return;var v=kbEl.value;if(kbEl.type=='password'&&!kbShow)v=v.replace(/./g,'•');if(v.length>58)v='…'+v.slice(-57);$('#kv').textContent=v+'▏'}
+function kbFire(){kbEl.dispatchEvent(new Event('input'))}
+function kbType(s){if(!kbEl)return;kbEl.value+=s;kbVal();kbFire()}
+function kbDel(){if(!kbEl)return;kbEl.value=kbEl.value.slice(0,-1);kbVal();kbFire()}
+function kbClose(){var el=kbEl;kbEl=null;$('#kb').hidden=true;if(el)el.focus()}
+function kbKey(l,fn,c){var b=document.createElement('button');b.className='f k'+(c?' '+c:'');b.textContent=l;b.onclick=fn;$('#kk').appendChild(b)}
+function kbFoc(l){var b=Array.prototype.filter.call($('#kk').children,function(x){return x.textContent==l})[0];if(b)b.focus()}
+function kbDraw(){var R=kbSym?['1234567890','!#$%&*()+=','?;,\'"~^|\\`','[]{}<>:@/_']:['1234567890','qwertyuiop','asdfghjkl.','zxcvbnm-_/'];
+ $('#kk').innerHTML='';
+ R.forEach(function(r){r.split('').forEach(function(c){var ch=kbCaps&&!kbSym?c.toUpperCase():c;kbKey(ch,function(){kbType(ch)})})});
+ kbKey('⇧',function(){kbCaps=!kbCaps;kbDraw();kbFoc('⇧')},kbCaps?'on':'');
+ kbKey(kbSym?'abc':'123',function(){kbSym=!kbSym;kbDraw();kbFoc(kbSym?'abc':'123')});
+ kbKey(':',function(){kbType(':')});kbKey('http://',function(){kbType('http://')});kbKey('.com',function(){kbType('.com')});
+ kbKey('Espaço',function(){kbType(' ')},'w3');kbKey('⌫',kbDel);kbKey('Pronto',kbClose,'btn')}
+function kbOpen(el){kbEl=el;kbCaps=false;kbSym=false;kbShow=false;
+ $('#kl').textContent=el.placeholder||'';$('#kt').hidden=el.type!='password';$('#kt').textContent='Mostrar';
+ $('#kb').hidden=false;kbDraw();kbVal();$('#kk').children[10].focus()}
+$('#kt').onclick=function(){kbShow=!kbShow;this.textContent=kbShow?'Ocultar':'Mostrar';kbVal()};
+Array.prototype.forEach.call(document.querySelectorAll('input'),function(i){i.readOnly=true;i.setAttribute('inputmode','none');i.onclick=function(){kbOpen(i)}});
 function parseM3U(t){var o={live:[],movie:[],series:[]},m=null;
  t.split(/\r?\n/).forEach(function(l){
   if(l.indexOf('#EXTINF')==0){m={n:(l.split(/,(.*)$/)[1]||'').trim(),logo:(l.match(/tvg-logo="([^"]*)"/)||[])[1],g:(l.match(/group-title="([^"]*)"/)||[])[1]||'Outros'}}
   else if(m&&l.trim()&&l[0]!='#'){m.url=l.trim();
-   var k=/\/series\//i.test(m.url)||/s\d+\s?e\d+/i.test(m.n)?'series':/\/movie\//i.test(m.url)||/filme|movie|vod/i.test(m.g)?'movie':'live';
+   var cn=/canais|24\s?h|\btv\b/i.test(m.g),k=/\/series\//i.test(m.url)||/s\d+\s?e\d+/i.test(m.n)||(!cn&&/(^|[\s|\]\-:])(s[eé]ries?|animes?|doramas?|novelas?)\b/i.test(m.g))?'series':/\/movie\//i.test(m.url)||/\.(mp4|mkv|avi|mov)(\?|$)/i.test(m.url)||(!cn&&/(^|[\s|\]\-:])(filmes?|movies?|vod|cinema|lan[cç]amentos?)\b/i.test(m.g))?'movie':'live';
    m.t=k;o[k].push(m);m=null}});
  return o}
 async function ensure(t){
  if(D[t])return;msg('Carregando '+T[t]+'…');
  try{
-  if(cfg.m3u){D._m=await(D._p=D._p||fetch(cfg.m3u).then(function(r){return r.text()}).then(parseM3U));D[t]=D._m[t]}
+  if(cfg.m3u){D._m=await(D._p=D._p||fetch(cfg.m3u).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text()}).then(function(x){var o=parseM3U(x);if(!o.live.length&&!o.movie.length&&!o.series.length)throw new Error('lista lida, mas sem itens (formato M3U inválido?)');return o}));D[t]=D._m[t]}
   else{var a={live:['get_live_categories','get_live_streams'],movie:['get_vod_categories','get_vod_streams'],series:['get_series_categories','get_series']}[t];
-   var r=await Promise.all(a.map(xt)),cm={};
+   var r=await Promise.all(a.map(xt)),cm={};if(!Array.isArray(r[0])||!Array.isArray(r[1]))throw new Error('o servidor não devolveu a lista (confira servidor, usuário e senha)');
    r[0].forEach(function(k){cm[k.category_id]=k.category_name});
    D[t]=r[1].map(function(i){return{t:t,n:i.name,logo:i.stream_icon||i.cover,g:cm[i.category_id]||'Outros',id:i.stream_id||i.series_id,ext:i.container_extension||'mp4'}})}
   msg('')
- }catch(e){msg('Não foi possível carregar. Confira a lista e a conexão.')}}
+ }catch(e){D._p=null;var em=String(e&&e.message||e);msg('Não carregou: '+em+(/fetch|network|load/i.test(em)?' (endereço inacessível ou bloqueado pela TV)':''));setTimeout(function(){msg('')},9000)}}
 function card(it,m,cw){var b=document.createElement('button');b._it=it;b.className='f card c'+m+(isFav(it)?' fv':'');
  b.innerHTML='<i style="background-image:url(\''+esc(it.logo)+'\')"></i><span></span>'+(cw&&it.d?'<b class="pb"><u style="width:'+Math.min(100,it.t0/it.d*100)+'%"></u></b>':'');
  b.querySelector('span').textContent=it.n;b.onclick=function(){open(it)};return b}
@@ -325,7 +354,8 @@ async function home(){sec='home';$('#vSet').hidden=true;$('#vList').hidden=true;
  $('#hero').hidden=!h;
  if(h){$('#hero').style.backgroundImage="url('"+esc(h.logo)+"')";$('#hn').textContent=h.n;$('#hg').textContent=h.g;$('#hb').onclick=function(){open(h)}}
  R.innerHTML='';row('Continuar assistindo',CW,1);row('Favoritos',[].concat(FAV.live,FAV.movie,FAV.series));row('Filmes',(D.movie||[]).slice(0,24));row('Séries',(D.series||[]).slice(0,24));
- if(!R.children.length)R.innerHTML='<p class="mu" style="margin-top:40px">Nada por aqui ainda. Abra Canais de TV, Filmes ou Séries.</p>'}
+ if(!R.children.length)R.innerHTML='<p class="mu" style="margin-top:40px">Nada por aqui ainda. Abra Canais de TV, Filmes ou Séries.</p>';
+ ensure('live').then(function(){if(sec!='home'||!(D.live||[]).length)return;if(R.firstChild&&R.firstChild.tagName=='P')R.innerHTML='';row('Canais de TV',D.live.slice(0,24))})}
 function go(s){sec=s;document.querySelectorAll('.nav').forEach(function(b){b.classList.toggle('on',b.dataset.s==s)});
  if(now&&!isFs&&s!='live')stop();
  if(s=='cfg'){$('#vHome').hidden=true;$('#vList').hidden=true;$('#vSet').hidden=false;thDraw();return}
@@ -376,6 +406,7 @@ function toggleFav(it,b){var a=FAV[it.t],k=key(it),x=a.findIndex(function(y){ret
  if(x>=0&&cat==FV&&sec==tab&&!lvOn){var g=$('#grid'),i=Array.prototype.indexOf.call(g.children,b);draw();var c=g.children[Math.min(i,g.children.length-1)];if(c&&c.focus)c.focus()}}
 function focusNav(){(document.querySelector('.nav.on')||document.querySelector('.nav')).focus()}
 function back(){
+ if(kbEl)return kbClose();
  if(!$('#ak').hidden){$('#ak').hidden=true;if(akpv)akpv.focus();return}
  if(lvOn)return exitLv();
  if(isFs){if(now&&now.t=='live')return fs(false);return stop()}
@@ -384,7 +415,7 @@ function back(){
  if(!document.activeElement.classList.contains('nav'))return focusNav();
  try{tizen.application.getCurrentApplication().exit()}catch(e){}}
 function nav(d){var dx=d[0],dy=d[1],a=document.activeElement,r=a.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,best=null,bd=1e9,
- root=!$('#ak').hidden?'#ak':lvOn?'#lv':isFs?'#pl':!$('#eps').hidden?'#eps':!$('#setup').hidden?'#setup':'body';
+ root=kbEl?'#kb':!$('#ak').hidden?'#ak':lvOn?'#lv':isFs?'#pl':!$('#eps').hidden?'#eps':!$('#setup').hidden?'#setup':'body';
  document.querySelectorAll(root+' .f').forEach(function(el){if(el==a||el.offsetParent===null)return;
   var q=el.getBoundingClientRect(),x=q.left+q.width/2-cx,y=q.top+q.height/2-cy;
   if((dx&&x*dx<=0)||(dy&&y*dy<=0))return;
@@ -392,6 +423,12 @@ function nav(d){var dx=d[0],dy=d[1],a=document.activeElement,r=a.getBoundingClie
  if(best){best.focus();best.scrollIntoView({block:'nearest',inline:'nearest'})}}
 document.addEventListener('keydown',function(e){var k=e.keyCode,a=document.activeElement,inp=a.tagName=='INPUT';
  if(k==10009||k==27){e.preventDefault();return back()}
+ if(kbEl){var ch=e.key&&e.key.length==1?e.key:(k>=48&&k<=57?String.fromCharCode(k):'');
+  if(ch){e.preventDefault();kbType(ch);return}
+  if(k==8){e.preventDefault();kbDel();return}
+  var dk={37:[-1,0],38:[0,-1],39:[1,0],40:[0,1]}[k];if(dk){e.preventDefault();nav(dk)}
+  return}
+ if(a.tagName=='INPUT'&&k==13){e.preventDefault();kbOpen(a);return}
  if(lvOn){var h=$('#lv').classList.contains('hide'),v2=$('#v');
   if(k==427||k==428||k==33||k==34){e.preventDefault();zap2(k==427||k==33?1:-1);return}
   if(k==415||k==19||k==10252){e.preventDefault();v2.paused?v2.play():v2.pause();return}
@@ -414,7 +451,7 @@ document.addEventListener('keydown',function(e){var k=e.keyCode,a=document.activ
  if(card&&k==13){e.preventDefault();if(!lt){lp=false;lt=setTimeout(function(){lp=true;toggleFav(a._it,a)},600)}return}
  if(card&&k==405){toggleFav(a._it,a);return}
  var d={37:[-1,0],38:[0,-1],39:[1,0],40:[0,1]}[k];
- if(d){if(inp&&d[0])return;e.preventDefault();nav(d)}});
+ if(d){e.preventDefault();nav(d)}});
 document.addEventListener('keyup',function(e){if(e.keyCode!=13||(isFs&&!lvOn))return;var a=document.activeElement;if(!(a.classList.contains('card')||a.classList.contains('lvi')||a.classList.contains('lvgi')))return;clearTimeout(lt);lt=null;if(!lp)a.click()});
 function enter(c){cfg=c;sv('lume',c);D={};$('#setup').hidden=true;$('#app').hidden=false;go('home');setTimeout(focusNav,80)}
 $('#goM').onclick=function(){var u=$('#m3u').value.trim();u?enter({m3u:u}):err('Cole o link da lista M3U.')};
