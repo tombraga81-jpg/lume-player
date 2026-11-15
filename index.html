@@ -71,7 +71,7 @@ button,input{font:inherit;color:inherit;border:0;outline:0;background:var(--sf);
 .rowb{display:flex}
 .box{width:700px;margin:0 20px;padding:36px;background:var(--pn);border-radius:24px}
 .box input,.box button{display:block;width:100%;margin-top:18px}
-#err{color:#ff8a8a;min-height:34px;margin-top:20px}
+#err{color:#ff8a8a;min-height:34px;margin-top:20px;white-space:pre-line;text-align:center}
 #lv{position:fixed;left:0;top:0;width:1920px;height:1080px;z-index:10;transition:opacity .35s}
 #lv.hide{opacity:0}
 #lvp{position:absolute;left:0;top:0;width:1060px;height:1080px;padding:40px 110px 0 50px;background:linear-gradient(90deg,rgba(var(--bgr),.97) 0%,rgba(var(--bgr),.92) 72%,rgba(var(--bgr),0) 100%)}
@@ -175,7 +175,7 @@ video::cue{font-size:42px;background:rgba(0,0,0,.65);color:#fff}
 <div id="setup"><h1>Lume Player</h1><p class="mu">Conecte sua lista para começar</p>
 <div class="rowb">
 <div class="box"><h2>Lista M3U</h2><input id="m3u" class="f" placeholder="http://exemplo.com/lista.m3u"><button id="goM" class="f btn">Entrar com M3U</button></div>
-<div class="box"><h2>Xtream Codes</h2><input id="xh" class="f" placeholder="Servidor (http://host:porta)"><input id="xu" class="f" placeholder="Usuário"><input id="xp" class="f" type="password" placeholder="Senha"><button id="goX" class="f btn">Entrar com Xtream</button></div>
+<div class="box"><h2>Xtream Codes</h2><input id="xh" class="f" placeholder="Servidor (http://host:porta)"><input id="xu" class="f" placeholder="Usuário"><input id="xp" class="f" type="password" placeholder="Senha"><button id="goX" class="f btn">Entrar com Xtream</button><button id="tx" class="f">Testar conexão</button></div>
 </div><div id="err"></div></div>
 <div id="app" hidden>
 <div id="side"><div id="me"><span>Lume</span><span id="clk"></span></div>
@@ -184,7 +184,7 @@ video::cue{font-size:42px;background:rgba(0,0,0,.65);color:#fff}
 <div id="main">
 <div id="vHome"><div id="hero"><div id="ht"><h1 id="hn"></h1><p id="hg" class="mu"></p><button id="hb" class="f btn">▶ Assistir</button><button id="hc" class="f" hidden></button></div></div><div id="rows"></div></div>
 <div id="vList" hidden><div id="cats"></div><div id="mid"><input id="q" class="f" placeholder="Buscar neste catálogo"><div id="grid"></div></div><div id="pane"><div id="pt"></div><div id="pg" class="mu"></div><div id="ph" class="mu">Aperte OK no canal de novo para tela cheia</div></div><div id="inf"><div id="ib"></div></div></div>
-<div id="vSet" hidden><h1>Configurações</h1><p class="mu">Lume Player · versão 1.5.6</p><h3>Temas</h3><div id="ths"></div><h3>IMDb (OMDb)</h3><p class="mu" style="margin-bottom:14px">Cole sua chave gratuita do omdbapi.com para ver nota, elenco e sinopse do IMDb.</p><input id="om" class="f" placeholder="Chave OMDb"><h3>Lista</h3><button id="chl" class="f">Trocar lista (M3U / Xtream)</button><p id="dbg" class="mu" style="margin-top:30px;font-size:18px;word-break:break-all"></p></div>
+<div id="vSet" hidden><h1>Configurações</h1><p class="mu">Lume Player · versão 1.5.7</p><h3>Temas</h3><div id="ths"></div><h3>IMDb (OMDb)</h3><p class="mu" style="margin-bottom:14px">Cole sua chave gratuita do omdbapi.com para ver nota, elenco e sinopse do IMDb.</p><input id="om" class="f" placeholder="Chave OMDb"><h3>Lista</h3><button id="chl" class="f">Trocar lista (M3U / Xtream)</button><p id="dbg" class="mu" style="margin-top:30px;font-size:18px;word-break:break-all"></p></div>
 </div></div>
 <div id="eps" hidden></div>
 <div id="lv" hidden><div id="lvp"><div id="lvh"></div><div id="lvc"><div id="lvg"></div><div id="lvl" hidden></div></div>
@@ -379,6 +379,16 @@ function lvDraw(){$('#lvl').innerHTML='';lvRows(0,Math.max(60,lvIdx()+30))}
 function m3uToX(u){var m=u.match(/^(https?:\/\/[^?#]*?)\/get\.php\?(.+)$/i);if(!m)return null;var q={};
  try{m[2].split('&').forEach(function(p){var k=p.split('=');q[k[0]]=decodeURIComponent(k.slice(1).join('=')||'')})}catch(e){return null}
  return q.username&&q.password?{host:m[1],u:q.username,p:q.password}:null}
+async function diag(){var h=$('#xh').value.trim(),u=$('#xu').value.trim(),p=$('#xp').value.trim();
+ if(!h||!u||!p){err('Preencha servidor, usuário e senha para testar.');return}
+ h=fix(h).replace(/^https?:\/\//i,'');err('Testando…');
+ var out=['Página: '+location.protocol+'//'+location.host+' · '+(navigator.userAgent.match(/Chrome\/[\d.]+/)||['?'])[0]];
+ for(var sc of ['http','https']){var url=sc+'://'+h+'/player_api.php?username='+encodeURIComponent(u)+'&password='+encodeURIComponent(p),r1,r2;
+  try{var r=await fetch(url);r1='ok ('+r.status+')'}catch(e){r1='falhou ('+(e.message||e)+')'}
+  try{await fetch(url,{mode:'no-cors'});r2='ok'}catch(e){r2='falhou'}
+  out.push(sc+': normal '+r1+' · sem-cors '+r2)}
+ err(out.join('\n'))}
+$('#tx').onclick=diag;
 function parseM3U(t){var o={live:[],movie:[],series:[]},m=null;
  t.split(/\r?\n/).forEach(function(l){
   if(l.indexOf('#EXTINF')==0){m={n:(l.split(/,(.*)$/)[1]||'').trim(),logo:(l.match(/tvg-logo="([^"]*)"/)||[])[1],g:(l.match(/group-title="([^"]*)"/)||[])[1]||'Outros'}}
