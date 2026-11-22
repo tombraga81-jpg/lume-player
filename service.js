@@ -15,7 +15,7 @@ function fetchU(u, res, n, insecure) {
   if (p.protocol !== 'http:' && p.protocol !== 'https:') { hdr(res, 400); return res.end('bad protocol'); }
   var lib = p.protocol === 'https:' ? https : http;
   var opt = { hostname: p.hostname, port: p.port, path: p.path, method: 'GET', timeout: 25000,
-    headers: { 'User-Agent': 'Mozilla/5.0 (Linux; Tizen) Lume', 'Accept': '*/*' } };
+    headers: { 'User-Agent': 'VLC/3.0.20 LibVLC/3.0.20', 'Accept': '*/*' } };
   if (insecure) opt.rejectUnauthorized = false;
   var r = lib.request(opt, function (up) {
     if (up.statusCode >= 300 && up.statusCode < 400 && up.headers.location && n < 4) {

@@ -1,6 +1,6 @@
 {
   "name": "lume-player",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "Player de listas M3U e Xtream para TV Samsung via TizenBrew",
   "packageType": "app",
   "appName": "Lume Player",
@@ -15,5 +15,17 @@
     "MediaStop"
   ],
   "license": "MIT",
-  "serviceFile": "service.js"
+  "serviceFile": "service.js",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "build": "node --check server.js",
+    "lint": "node --check server.js && node --check service.js",
+    "prep:wgt": "node scripts/prep-wgt.js"
+  },
+  "dependencies": {
+    "express": "^5.3.0",
+    "hls.js": "^1.7.4",
+    "mpegts.js": "^1.8.2"
+  }
 }
